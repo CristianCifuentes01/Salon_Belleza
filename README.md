@@ -1,59 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AppSalon - Sistema de Gestión de Belleza
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+AppSalon es una aplicación web robusta diseñada para la gestión de servicios y citas en un salón de belleza. Permite a los clientes reservar citas de forma sencilla y a los administradores gestionar el catálogo de servicios, usuarios y citas de manera eficiente.
 
-## About Laravel
+## 🚀 Tecnologías Utilizadas
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend:** [Laravel 12](https://laravel.com/) (PHP 8.2+)
+- **Frontend:** Blade, [Tailwind CSS](https://tailwindcss.com/)
+- **Base de Datos:** SQLite (Configuración por defecto)
+- **Bundler:** [Vite](https://vitejs.dev/)
+- **Autenticación:** [Laravel Breeze](https://laravel.com/docs/breeze)
+- **Iconos:** Heroicons
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Funcionalidades Implementadas
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👤 Usuarios y Autenticación
+- **Registro e Inicio de Sesión:** Sistema seguro de autenticación con roles.
+- **Gestión de Perfil:** Los usuarios pueden actualizar su información personal.
+- **Roles:** Diferenciación entre Clientes y Administradores.
 
-## Learning Laravel
+### 💇 Servicios
+- **Catálogo Público:** Visualización de servicios disponibles para todos los usuarios.
+- **Gestión Administrativa:** CRUD completo de servicios (crear, leer, actualizar, eliminar) con control de estado (activo/inactivo).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 📅 Citas (Appointments)
+- **Reserva de Citas:** Los clientes pueden seleccionar múltiples servicios y una fecha/hora.
+- **Verificación de Disponibilidad:** Sistema dinámico para evitar solapamiento de citas.
+- **Historial:** Los clientes pueden ver sus citas pasadas y futuras en su panel personal.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🛠️ Panel de Administración
+- **Dashboard:** Resumen estadístico de citas y usuarios.
+- **Gestión de Citas:** Los administradores pueden ver todas las citas y cambiar su estado (Pendiente, Completada, Cancelada).
+- **Gestión de Usuarios:** CRUD administrativo para gestionar la base de datos de usuarios.
+- **Reportes:** Generación y descarga de reportes de citas en formato CSV.
 
-## Laravel Sponsors
+## 🛠️ Instalación y Configuración
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Sigue estos pasos para ejecutar el proyecto localmente:
 
-### Premium Partners
+1. **Clonar el repositorio:**
+   ```bash
+   git clone <https://github.com/CristianCifuentes01/Salon_Belleza.git>
+   
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Instalar dependencias de PHP:**
+   ```bash
+   composer install
+   ```
 
-## Contributing
+3. **Instalar dependencias de JavaScript:**
+   ```bash
+   npm install
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Configurar el entorno:**
+   - Copia el archivo `.env.example` a `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Genera la clave de la aplicación:
+     ```bash
+     php artisan key:generate
+     ```
 
-## Code of Conduct
+5. **Configurar la base de datos:**
+   - Por defecto, el proyecto usa SQLite. Crea el archivo de base de datos:
+     ```bash
+     touch database/database.sqlite
+     ```
+   - Ejecuta las migraciones y carga los datos de prueba (seeders):
+     ```bash
+     php artisan migrate --seed
+     ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+6. **Compilar assets y ejecutar servidor:**
+   - En una terminal, compila los estilos y scripts:
+     ```bash
+     npm run dev
+     ```
+   - En otra terminal, inicia el servidor de Laravel:
+     ```bash
+     php artisan serve
+     ```
 
-## Security Vulnerabilities
+## 🔐 Credenciales de Prueba
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Puedes usar las siguientes cuentas preconfiguradas para explorar la aplicación:
 
-## License
+### Administrador
+- **Email:** `admin@appsalon.com`
+- **Password:** `password`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Cliente
+- **Email:** `cliente@appsalon.com`
+- **Password:** `password`
+
+---
+Desarrollado por Catalina Estrada, Arley David Alpala, Cristian Cifuentes.
