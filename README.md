@@ -22,16 +22,10 @@ AppSalon es una aplicación web robusta diseñada para la gestión de servicios 
 - **Catálogo Público:** Visualización de servicios disponibles para todos los usuarios.
 - **Gestión Administrativa:** CRUD completo de servicios (crear, leer, actualizar, eliminar) con control de estado (activo/inactivo).
 
-### 📅 Citas (Appointments)
-- **Reserva de Citas:** Los clientes pueden seleccionar múltiples servicios y una fecha/hora.
-- **Verificación de Disponibilidad:** Sistema dinámico para evitar solapamiento de citas.
-- **Historial:** Los clientes pueden ver sus citas pasadas y futuras en su panel personal.
 
 ### 🛠️ Panel de Administración
-- **Dashboard:** Resumen estadístico de citas y usuarios.
 - **Gestión de Citas:** Los administradores pueden ver todas las citas y cambiar su estado (Pendiente, Completada, Cancelada).
 - **Gestión de Usuarios:** CRUD administrativo para gestionar la base de datos de usuarios.
-- **Reportes:** Generación y descarga de reportes de citas en formato CSV.
 
 ## 🛠️ Instalación y Configuración
 
