@@ -78,6 +78,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Reportes
     Route::get('/reportes', [AdminController::class, 'reportes'])->name('reportes');
     Route::get('/reportes/csv', [AdminController::class, 'exportarCSV'])->name('reportes.csv');
+    Route::get('/reportes/pdf', [AdminController::class, 'exportarPDF'])->name('reportes.pdf');
 });
 
 require __DIR__.'/auth.php';

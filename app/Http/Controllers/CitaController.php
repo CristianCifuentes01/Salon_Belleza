@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CitaCreadaMail;
 
 class CitaController extends Controller
 {
@@ -75,6 +77,14 @@ class CitaController extends Controller
 
         // Asociar servicios
         $cita->servicios()->attach($validated['servicios']);
+
+        // Enviar correo electrónico
+        try {
+            Mail::to(auth()->user()->email)->send(new CitaCreadaMail($cita));
+        } catch (\Exception $e) {
+            // Logear error si el correo falla, pero no detener el flujo
+            \Log::error('Error al enviar correo de cita: ' . $e->getMessage());
+        }
 
         return redirect()->route('citas.index')
             ->with('success', '¡Cita reservada exitosamente! Estado: Pendiente de confirmación.');

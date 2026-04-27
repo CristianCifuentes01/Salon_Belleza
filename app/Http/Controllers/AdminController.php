@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -200,5 +201,23 @@ class AdminController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Exportar citas a PDF.
+     */
+    public function exportarPDF(Request $request)
+    {
+        $fechaInicio = $request->input('fecha_inicio', now()->startOfMonth()->toDateString());
+        $fechaFin = $request->input('fecha_fin', now()->toDateString());
+
+        $citas = Cita::with(['usuario', 'servicios'])
+            ->whereBetween('fecha', [$fechaInicio, $fechaFin])
+            ->orderBy('fecha')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.reportes-pdf', compact('citas', 'fechaInicio', 'fechaFin'));
+        
+        return $pdf->download("reporte_citas_{$fechaInicio}_{$fechaFin}.pdf");
     }
 }

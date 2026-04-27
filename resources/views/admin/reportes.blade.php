@@ -15,6 +15,7 @@
                     </div>
                     <button type="submit" class="btn-primary btn-sm">Generar Reporte</button>
                     <a href="{{ route('admin.reportes.csv', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin]) }}" class="btn-secondary btn-sm">📥 Exportar CSV</a>
+                    <a href="{{ route('admin.reportes.pdf', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin]) }}" class="btn-secondary btn-sm !bg-red-500 !text-white hover:!bg-red-600">📄 Exportar PDF</a>
                 </form>
             </div>
 
