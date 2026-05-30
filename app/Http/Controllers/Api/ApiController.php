@@ -5,15 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Cita;
 use App\Models\Servicio;
-use Illuminate\Http\Request;
+use App\Services\DisponibilidadService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
-    /**
-     * GET /api/servicios
-     * Listar todos los servicios activos.
-     */
+    public function __construct(private DisponibilidadService $disponibilidadService)
+    {
+    }
+
     public function servicios(): JsonResponse
     {
         $servicios = Servicio::activo()->orderBy('nombre')->get();
@@ -25,13 +26,88 @@ class ApiController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/citas/usuario/{id}
-     * Listar citas de un usuario específico.
-     */
+    public function disponibilidad(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'fecha' => 'required|date|after_or_equal:today',
+            'servicios' => 'sometimes|array',
+            'servicios.*' => 'exists:servicios,id',
+            'cita_id' => 'nullable|integer|exists:citas,id',
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'fecha' => $validated['fecha'],
+                'horas' => $this->disponibilidadService->horasDisponibles(
+                    $validated['fecha'],
+                    $validated['servicios'] ?? [],
+                    $validated['cita_id'] ?? null
+                ),
+            ],
+        ]);
+    }
+
+    public function docs(): JsonResponse
+    {
+        return response()->json([
+            'openapi' => '3.0.0',
+            'info' => [
+                'title' => 'AppSalon API',
+                'version' => '1.0.0',
+            ],
+            'paths' => [
+                '/api/servicios' => [
+                    'get' => [
+                        'summary' => 'Lista servicios activos',
+                        'responses' => ['200' => ['description' => 'Servicios en JSON']],
+                    ],
+                ],
+                '/api/disponibilidad' => [
+                    'get' => [
+                        'summary' => 'Consulta horarios disponibles',
+                        'parameters' => [
+                            ['name' => 'fecha', 'in' => 'query', 'required' => true],
+                            ['name' => 'servicios[]', 'in' => 'query', 'required' => false],
+                        ],
+                        'responses' => ['200' => ['description' => 'Horas disponibles']],
+                    ],
+                ],
+                '/api/citas' => [
+                    'post' => [
+                        'summary' => 'Crea una cita',
+                        'security' => [['bearerAuth' => []]],
+                        'responses' => [
+                            '201' => ['description' => 'Cita creada'],
+                            '422' => ['description' => 'Horario ocupado o datos invalidos'],
+                        ],
+                    ],
+                ],
+                '/api/citas/{id}' => [
+                    'put' => [
+                        'summary' => 'Actualiza o reprograma una cita',
+                        'security' => [['bearerAuth' => []]],
+                        'responses' => ['200' => ['description' => 'Cita actualizada']],
+                    ],
+                ],
+                '/api/citas/usuario/{id}' => [
+                    'get' => [
+                        'summary' => 'Lista citas de un usuario',
+                        'security' => [['bearerAuth' => []]],
+                        'responses' => ['200' => ['description' => 'Citas del usuario']],
+                    ],
+                ],
+            ],
+            'components' => [
+                'securitySchemes' => [
+                    'bearerAuth' => ['type' => 'http', 'scheme' => 'bearer'],
+                ],
+            ],
+        ]);
+    }
+
     public function citasUsuario(int $id): JsonResponse
     {
-        // Verificar que el usuario autenticado puede ver estas citas
         if (auth()->id() !== $id && !auth()->user()->isAdmin()) {
             return response()->json([
                 'status' => 'error',
@@ -51,10 +127,6 @@ class ApiController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/citas
-     * Crear una nueva cita.
-     */
     public function crearCita(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -64,27 +136,20 @@ class ApiController extends Controller
             'servicios.*' => 'exists:servicios,id',
         ]);
 
-        // Verificar disponibilidad
-        $ocupado = Cita::where('fecha', $validated['fecha'])
-            ->where('hora', $validated['hora'])
-            ->whereIn('estado', ['pendiente', 'confirmada'])
-            ->exists();
-
-        if ($ocupado) {
+        if (!$this->disponibilidadService->estaDisponible($validated['fecha'], $validated['hora'], $validated['servicios'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Este horario ya está ocupado.',
+                'message' => 'Este horario no esta disponible.',
             ], 422);
         }
 
         $servicios = Servicio::whereIn('id', $validated['servicios'])->get();
-        $total = $servicios->sum('precio');
 
         $cita = Cita::create([
             'fecha' => $validated['fecha'],
             'hora' => $validated['hora'],
             'usuarioId' => auth()->id(),
-            'total' => $total,
+            'total' => $servicios->sum('precio'),
             'estado' => 'pendiente',
         ]);
 
@@ -98,13 +163,9 @@ class ApiController extends Controller
         ], 201);
     }
 
-    /**
-     * PUT /api/citas/{id}
-     * Actualizar una cita existente.
-     */
     public function actualizarCita(Request $request, int $id): JsonResponse
     {
-        $cita = Cita::find($id);
+        $cita = Cita::with('servicios')->find($id);
 
         if (!$cita) {
             return response()->json([
@@ -128,21 +189,15 @@ class ApiController extends Controller
             'servicios.*' => 'exists:servicios,id',
         ]);
 
-        // Si cambian fecha/hora, verificar disponibilidad
-        if (isset($validated['fecha']) || isset($validated['hora'])) {
+        if (isset($validated['fecha']) || isset($validated['hora']) || isset($validated['servicios'])) {
             $fecha = $validated['fecha'] ?? $cita->fecha->format('Y-m-d');
-            $hora = $validated['hora'] ?? $cita->hora;
+            $hora = $validated['hora'] ?? substr((string) $cita->hora, 0, 5);
+            $servicios = $validated['servicios'] ?? $cita->servicios->pluck('id')->all();
 
-            $ocupado = Cita::where('fecha', $fecha)
-                ->where('hora', $hora)
-                ->where('id', '!=', $cita->id)
-                ->whereIn('estado', ['pendiente', 'confirmada'])
-                ->exists();
-
-            if ($ocupado) {
+            if (!$this->disponibilidadService->estaDisponible($fecha, $hora, $servicios, $cita->id)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Este horario ya está ocupado.',
+                    'message' => 'Este horario no esta disponible.',
                 ], 422);
             }
         }
@@ -151,8 +206,9 @@ class ApiController extends Controller
 
         if (isset($validated['servicios'])) {
             $cita->servicios()->sync($validated['servicios']);
-            $total = Servicio::whereIn('id', $validated['servicios'])->sum('precio');
-            $cita->update(['total' => $total]);
+            $cita->update([
+                'total' => Servicio::whereIn('id', $validated['servicios'])->sum('precio'),
+            ]);
         }
 
         $cita->load('servicios');

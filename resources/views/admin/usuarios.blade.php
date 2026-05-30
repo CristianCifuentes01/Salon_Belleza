@@ -16,7 +16,7 @@
                             <td class="font-semibold">{{ $user->nombre }} {{ $user->apellido }}</td>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->telefono ?: '—' }}</td>
-                            <td><span class="badge {{ $user->isAdmin() ? 'badge-yellow' : 'badge-blue' }}">{{ $user->isAdmin() ? 'Admin' : 'Cliente' }}</span></td>
+                            <td><span class="badge {{ $user->isAdmin() ? 'badge-yellow' : ($user->isEmpleado() ? 'badge-green' : 'badge-blue') }}">{{ ucfirst($user->role ?? ($user->isAdmin() ? 'admin' : 'cliente')) }}</span></td>
                             <td><span class="badge {{ $user->confirmado ? 'badge-green' : 'badge-red' }}">{{ $user->confirmado ? 'Activo' : 'Inactivo' }}</span></td>
                             <td class="space-x-2">
                                 <a href="{{ route('admin.usuarios.edit', $user) }}" class="text-salon-600 hover:text-salon-800 text-sm font-medium">Editar</a>

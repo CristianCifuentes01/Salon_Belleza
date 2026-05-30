@@ -24,8 +24,10 @@ class User extends Authenticatable
         'password',
         'telefono',
         'admin',
+        'role',
         'confirmado',
         'token',
+        'api_token',
     ];
 
     /**
@@ -37,6 +39,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'token',
+        'api_token',
     ];
 
     /**
@@ -59,7 +62,12 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->admin === true;
+        return $this->admin === true || $this->role === 'admin';
+    }
+
+    public function isEmpleado(): bool
+    {
+        return $this->role === 'empleado';
     }
 
     /**

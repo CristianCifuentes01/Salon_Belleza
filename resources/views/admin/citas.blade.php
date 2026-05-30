@@ -19,11 +19,19 @@
                         <input type="date" name="fecha" value="{{ request('fecha') }}" class="block mt-1 rounded-lg border-gray-300 text-sm focus:border-salon-500">
                     </div>
                     <div>
+                        <label class="text-xs text-gray-500 font-medium">Vista</label>
+                        <select name="vista" class="block mt-1 rounded-lg border-gray-300 text-sm focus:border-salon-500">
+                            <option value="dia" {{ request('vista', 'dia') === 'dia' ? 'selected' : '' }}>Dia</option>
+                            <option value="semana" {{ request('vista') === 'semana' ? 'selected' : '' }}>Semana</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="text-xs text-gray-500 font-medium">Buscar cliente</label>
                         <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Nombre o email..." class="block mt-1 rounded-lg border-gray-300 text-sm focus:border-salon-500">
                     </div>
                     <button type="submit" class="btn-primary btn-sm">Filtrar</button>
-                    <a href="{{ route('admin.citas', ['fecha' => date('Y-m-d')]) }}" class="btn-gold btn-sm">Hoy</a>
+                    <a href="{{ route('admin.citas', ['fecha' => date('Y-m-d'), 'vista' => 'dia']) }}" class="btn-gold btn-sm">Hoy</a>
+                    <a href="{{ route('admin.citas', ['fecha' => date('Y-m-d'), 'vista' => 'semana']) }}" class="btn-secondary btn-sm">Semana</a>
                     <a href="{{ route('admin.citas') }}" class="btn-secondary btn-sm">Limpiar</a>
                 </form>
             </div>

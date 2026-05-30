@@ -1,19 +1,18 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-bold text-xl text-gray-800">Reservar Cita</h2></x-slot>
+    <x-slot name="header"><h2 class="font-bold text-xl text-gray-800">Reprogramar Cita</h2></x-slot>
     <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('citas.store') }}" x-data="citaForm()" x-init="init()">
+            <form method="POST" action="{{ route('citas.update', $cita) }}" x-data="citaEditForm()" x-init="init()">
                 @csrf
+                @method('PUT')
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Left: Form -->
                     <div class="lg:col-span-2 space-y-6">
-                        <!-- Date & Time -->
                         <div class="card p-6">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">📅 Fecha y Hora</h3>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Fecha y Hora</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <x-input-label for="fecha" value="Fecha" />
-                                    <x-text-input id="fecha" name="fecha" type="date" class="mt-1 block w-full" :value="old('fecha')" required x-model="fecha" @change="cargarHoras()" x-bind:min="hoy" />
+                                    <x-text-input id="fecha" name="fecha" type="date" class="mt-1 block w-full" :value="old('fecha', $cita->fecha->toDateString())" required x-model="fecha" @change="cargarHoras()" x-bind:min="hoy" />
                                     <x-input-error :messages="$errors->get('fecha')" class="mt-2" />
                                 </div>
                                 <div>
@@ -31,9 +30,8 @@
                             </div>
                         </div>
 
-                        <!-- Services -->
                         <div class="card p-6">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">✨ Selecciona tus Servicios</h3>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Servicios</h3>
                             <x-input-error :messages="$errors->get('servicios')" class="mb-2" />
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 @foreach($servicios as $servicio)
@@ -43,7 +41,7 @@
                                            class="mt-1 rounded border-gray-300 text-salon-600 focus:ring-salon-500"
                                            x-model="selectedServicios"
                                            @change="calcularTotal(); cargarHoras()"
-                                           {{ in_array($servicio->id, old('servicios', [])) ? 'checked' : '' }}>
+                                           {{ in_array($servicio->id, old('servicios', $cita->servicios->pluck('id')->all())) ? 'checked' : '' }}>
                                     <div class="ml-3">
                                         <span class="font-semibold text-gray-800">{{ $servicio->nombre }}</span>
                                         <div class="flex items-center gap-3 mt-1">
@@ -57,32 +55,17 @@
                         </div>
                     </div>
 
-                    <!-- Right: Summary -->
                     <div>
                         <div class="card p-6 sticky top-24">
                             <h3 class="text-lg font-bold text-gray-800 mb-4">Resumen</h3>
                             <div class="space-y-3 mb-6">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Fecha:</span>
-                                    <span class="font-medium" x-text="fecha || '---'"></span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Hora:</span>
-                                    <span class="font-medium" x-text="hora || '---'"></span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Servicios:</span>
-                                    <span class="font-medium" x-text="selectedServicios.length + ' seleccionados'"></span>
-                                </div>
+                                <div class="flex justify-between text-sm"><span class="text-gray-600">Fecha:</span><span class="font-medium" x-text="fecha || '---'"></span></div>
+                                <div class="flex justify-between text-sm"><span class="text-gray-600">Hora:</span><span class="font-medium" x-text="hora || '---'"></span></div>
+                                <div class="flex justify-between text-sm"><span class="text-gray-600">Servicios:</span><span class="font-medium" x-text="selectedServicios.length + ' seleccionados'"></span></div>
                                 <hr>
-                                <div class="flex justify-between">
-                                    <span class="font-bold text-gray-800">Total:</span>
-                                    <span class="text-2xl font-bold text-salon-600" x-text="'$' + total.toFixed(2)"></span>
-                                </div>
+                                <div class="flex justify-between"><span class="font-bold text-gray-800">Total:</span><span class="text-2xl font-bold text-salon-600" x-text="'$' + total.toFixed(2)"></span></div>
                             </div>
-                            <button type="submit" class="btn-primary w-full" :disabled="selectedServicios.length === 0 || !fecha || !hora">
-                                Confirmar Reserva
-                            </button>
+                            <button type="submit" class="btn-primary w-full" :disabled="selectedServicios.length === 0 || !fecha || !hora">Guardar Cambios</button>
                             <a href="{{ route('citas.index') }}" class="btn-secondary w-full mt-3 text-center text-sm">Cancelar</a>
                         </div>
                     </div>
@@ -93,18 +76,18 @@
 
     @push('scripts')
     <script>
-        function citaForm() {
+        function citaEditForm() {
             return {
-                fecha: '{{ old("fecha", "") }}',
-                hora: '{{ old("hora", "") }}',
+                fecha: '{{ old("fecha", $cita->fecha->toDateString()) }}',
+                hora: '{{ old("hora", substr((string) $cita->hora, 0, 5)) }}',
                 hoy: new Date().toISOString().split('T')[0],
                 horasDisponibles: [],
                 cargandoHoras: false,
-                selectedServicios: {!! json_encode(old('servicios', [])) !!}.map(String),
+                selectedServicios: {!! json_encode(array_map('strval', old('servicios', $cita->servicios->pluck('id')->all()))) !!},
                 total: 0,
                 precios: {!! $servicios->pluck('precio', 'id')->toJson() !!},
                 init() {
-                    if (this.fecha) this.cargarHoras();
+                    this.cargarHoras();
                     this.calcularTotal();
                 },
                 async cargarHoras() {
@@ -112,20 +95,21 @@
                     this.cargandoHoras = true;
                     this.horasDisponibles = [];
                     try {
-                        const params = new URLSearchParams({ fecha: this.fecha });
+                        const params = new URLSearchParams({ fecha: this.fecha, cita_id: '{{ $cita->id }}' });
                         this.selectedServicios.forEach(id => params.append('servicios[]', id));
                         const res = await fetch(`{{ route('citas.disponibilidad') }}?${params.toString()}`);
                         const data = await res.json();
                         this.horasDisponibles = data.horas || [];
+                        if (this.hora && !this.horasDisponibles.includes(this.hora)) {
+                            this.horasDisponibles.unshift(this.hora);
+                        }
                     } catch (e) {
                         console.error(e);
                     }
                     this.cargandoHoras = false;
                 },
                 calcularTotal() {
-                    this.total = this.selectedServicios.reduce((sum, id) => {
-                        return sum + (parseFloat(this.precios[id]) || 0);
-                    }, 0);
+                    this.total = this.selectedServicios.reduce((sum, id) => sum + (parseFloat(this.precios[id]) || 0), 0);
                 }
             }
         }

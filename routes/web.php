@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
 
     // Citas del usuario
     Route::get('/citas/disponibilidad', [CitaController::class, 'disponibilidad'])->name('citas.disponibilidad');
-    Route::resource('citas', CitaController::class)->except(['edit', 'update']);
+    Route::resource('citas', CitaController::class);
 });
 
 /*
@@ -65,6 +65,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Gestión de citas
     Route::get('/citas', [AdminController::class, 'citas'])->name('citas');
     Route::patch('/citas/{cita}/estado', [AdminController::class, 'cambiarEstadoCita'])->name('citas.estado');
+
+    // GestiÃ³n de horarios y bloqueos
+    Route::get('/horarios', [AdminController::class, 'horarios'])->name('horarios');
+    Route::put('/horarios', [AdminController::class, 'actualizarHorarios'])->name('horarios.update');
+    Route::post('/horarios/bloqueos', [AdminController::class, 'crearBloqueo'])->name('horarios.bloqueos.store');
+    Route::delete('/horarios/bloqueos/{bloqueo}', [AdminController::class, 'eliminarBloqueo'])->name('horarios.bloqueos.destroy');
 
     // Gestión de usuarios
     Route::get('/usuarios', [AdminController::class, 'usuarios'])->name('usuarios');

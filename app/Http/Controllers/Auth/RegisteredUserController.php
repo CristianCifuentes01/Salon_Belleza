@@ -46,8 +46,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'telefono' => $request->telefono,
             'admin' => 0,
+            'role' => 'cliente',
             'confirmado' => 1, // Auto-confirmar para simplificar
             'token' => Str::random(15),
+            'api_token' => hash('sha256', Str::random(60) . $request->email),
         ]);
 
         event(new Registered($user));

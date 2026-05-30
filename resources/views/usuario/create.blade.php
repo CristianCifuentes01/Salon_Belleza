@@ -32,9 +32,14 @@
                             <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" required />
                             <x-input-error :messages="$errors->get('password')" class="mt-2" />
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="admin" name="admin" value="1" class="rounded border-gray-300 text-salon-600 focus:ring-salon-500">
-                            <x-input-label for="admin" value="Es Administrador" />
+                        <div>
+                            <x-input-label for="role" value="Rol" />
+                            <select id="role" name="role" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-salon-500 focus:ring-salon-500" required>
+                                @foreach(['cliente' => 'Cliente', 'empleado' => 'Empleado', 'admin' => 'Admin'] as $value => $label)
+                                <option value="{{ $value }}" {{ old('role', 'cliente') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('role')" class="mt-2" />
                         </div>
                         <div class="flex justify-end gap-3 pt-4">
                             <a href="{{ route('admin.usuarios') }}" class="btn-secondary btn-sm">Cancelar</a>

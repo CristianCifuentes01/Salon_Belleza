@@ -1,8 +1,7 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-bold text-xl text-gray-800">📊 Reportes</h2></x-slot>
+    <x-slot name="header"><h2 class="font-bold text-xl text-gray-800">Reportes</h2></x-slot>
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <!-- Filters -->
             <div class="card p-4">
                 <form method="GET" class="flex flex-wrap gap-3 items-end">
                     <div>
@@ -13,20 +12,28 @@
                         <label class="text-xs text-gray-500 font-medium">Fecha Fin</label>
                         <input type="date" name="fecha_fin" value="{{ $fechaFin }}" class="block mt-1 rounded-lg border-gray-300 text-sm">
                     </div>
+                    <div>
+                        <label class="text-xs text-gray-500 font-medium">Servicio</label>
+                        <select name="servicio_id" class="block mt-1 rounded-lg border-gray-300 text-sm">
+                            <option value="">Todos</option>
+                            @foreach($servicios as $servicio)
+                            <option value="{{ $servicio->id }}" {{ (string) $servicioId === (string) $servicio->id ? 'selected' : '' }}>{{ $servicio->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <button type="submit" class="btn-primary btn-sm">Generar Reporte</button>
-                    <a href="{{ route('admin.reportes.csv', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin]) }}" class="btn-secondary btn-sm">📥 Exportar CSV</a>
-                    <a href="{{ route('admin.reportes.pdf', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin]) }}" class="btn-secondary btn-sm !bg-red-500 !text-white hover:!bg-red-600">📄 Exportar PDF</a>
+                    <a href="{{ route('admin.reportes.csv', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin, 'servicio_id' => $servicioId]) }}" class="btn-secondary btn-sm">Exportar CSV</a>
+                    <a href="{{ route('admin.reportes.pdf', ['fecha_inicio' => $fechaInicio, 'fecha_fin' => $fechaFin, 'servicio_id' => $servicioId]) }}" class="btn-secondary btn-sm !bg-red-500 !text-white hover:!bg-red-600">Exportar PDF</a>
                 </form>
             </div>
 
-            <!-- Citas por estado -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Citas por Estado</h3>
                     <canvas id="chartEstados" height="200"></canvas>
                 </div>
                 <div class="card p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Resumen del Período</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Resumen del Periodo</h3>
                     <div class="space-y-3">
                         @foreach(['pendiente' => 'yellow', 'confirmada' => 'blue', 'completada' => 'green', 'cancelada' => 'red'] as $estado => $color)
                         <div class="flex items-center justify-between p-3 bg-{{ $color }}-50 rounded-lg">
@@ -38,7 +45,32 @@
                 </div>
             </div>
 
-            <!-- Ingresos por servicio -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Ingresos por Dia</h3>
+                    <canvas id="chartIngresos" height="200"></canvas>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Detalle Diario</h3>
+                    <div class="overflow-x-auto">
+                        <table class="table-salon">
+                            <thead><tr><th>Fecha</th><th>Citas</th><th>Ingresos</th></tr></thead>
+                            <tbody>
+                                @forelse($ingresosPorDia as $dia)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($dia->fecha)->format('d/m/Y') }}</td>
+                                    <td>{{ $dia->num_citas }}</td>
+                                    <td class="font-bold text-green-700">${{ number_format($dia->ingresos, 2) }}</td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="3" class="text-center py-6 text-gray-500">Sin ingresos en el periodo.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card p-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Ingresos por Servicio</h3>
                 <div class="overflow-x-auto">
@@ -81,6 +113,19 @@
                 }]
             },
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('chartIngresos'), {
+            type: 'bar',
+            data: {
+                labels: {!! $ingresosPorDia->pluck('fecha')->map(fn ($fecha) => \Carbon\Carbon::parse($fecha)->format('d/m'))->toJson() !!},
+                datasets: [{
+                    label: 'Ingresos',
+                    data: {!! $ingresosPorDia->pluck('ingresos')->toJson() !!},
+                    backgroundColor: '#22c55e'
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
         });
     </script>
     @endpush

@@ -18,9 +18,11 @@ use Illuminate\Support\Facades\Route;
 
 // Público
 Route::get('/servicios', [ApiController::class, 'servicios']);
+Route::get('/docs', [ApiController::class, 'docs']);
+Route::get('/disponibilidad', [ApiController::class, 'disponibilidad']);
 
-// Autenticado (usando Sanctum o session)
-Route::middleware('auth:sanctum')->group(function () {
+// Autenticado con token Bearer o encabezado X-API-TOKEN.
+Route::middleware('api.token')->group(function () {
     Route::get('/citas/usuario/{id}', [ApiController::class, 'citasUsuario']);
     Route::post('/citas', [ApiController::class, 'crearCita']);
     Route::put('/citas/{id}', [ApiController::class, 'actualizarCita']);

@@ -29,6 +29,7 @@
                             <div class="flex space-x-2">
                                 <a href="{{ route('citas.show', $cita) }}" class="text-salon-600 hover:text-salon-800 text-sm font-medium">Ver</a>
                                 @if(in_array($cita->estado, ['pendiente', 'confirmada']))
+                                <a href="{{ route('citas.edit', $cita) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Reprogramar</a>
                                 <form method="POST" action="{{ route('citas.destroy', $cita) }}" onsubmit="return confirm('¿Cancelar esta cita?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">Cancelar</button>
